@@ -87,4 +87,23 @@ public class HomeController {
         redirectAttributes.addFlashAttribute("message", "保存しました");
         return "redirect:/todos";
     }
+
+    @GetMapping("/todos/{id}/delete")
+    public String deleteConfirm(@PathVariable("id") Long id, Model model,
+            RedirectAttributes redirectAttributes) {
+        Todo todo = todoMapper.findById(id);
+        if (todo == null) {
+            redirectAttributes.addFlashAttribute("message", "見つかりませんでした");
+            return "redirect:/todos";
+        }
+        model.addAttribute("todo", todo);
+        return "delete";
+    }
+
+    @PostMapping("/todos/{id}/delete")
+    public String delete(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        todoMapper.deleteById(id);
+        redirectAttributes.addFlashAttribute("message", "削除しました");
+        return "redirect:/todos";
+    }
 }

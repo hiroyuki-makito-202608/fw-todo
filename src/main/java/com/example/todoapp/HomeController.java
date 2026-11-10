@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
+
 @Controller
 public class HomeController {
 
@@ -36,8 +39,11 @@ public class HomeController {
     }
 
     @PostMapping("/todos/confirm")
-    public String createConfirm(@ModelAttribute Todo todo, Model model) {
+    public String createConfirm(@Valid @ModelAttribute Todo todo, BindingResult bindingResult, Model model) {
         model.addAttribute("todo", todo);
+        if (bindingResult.hasErrors()) {
+            return "create";
+        }
         return "create-confirm";
     }
 
@@ -66,9 +72,13 @@ public class HomeController {
     }
 
     @PostMapping("/todos/{id}/confirm")
-    public String editConfirm(@PathVariable("id") Long id, @ModelAttribute Todo todo, Model model) {
+    public String editConfirm(@PathVariable("id") Long id, @Valid @ModelAttribute Todo todo,
+            BindingResult bindingResult, Model model) {
         todo.setId(id);
         model.addAttribute("todo", todo);
+        if (bindingResult.hasErrors()) {
+            return "edit";
+        }
         return "edit-confirm";
     }
 

@@ -1,4 +1,4 @@
-﻿package com.example.todoapp;
+package com.example.todoapp;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

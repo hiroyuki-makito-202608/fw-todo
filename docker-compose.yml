@@ -1,4 +1,16 @@
 ﻿services:
+  app:
+    image: fw-app:latest
+    container_name: fw-app
+    depends_on:
+      - db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    command: ["--spring.datasource.url=jdbc:mysql://db:3306/todoapp"]
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
   db:
     image: mysql:8.0
     container_name: fw-mysql

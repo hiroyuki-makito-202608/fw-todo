@@ -27,3 +27,50 @@ Content-Type: application/json
 
 ### 4. 1件削除する
 DELETE http://localhost:8080/api/todos/1
+
+###
+GET http://localhost:8080/api/todos?from=2026-11-01&to=2026-11-30
+
+### 5. 履歴書を見直す
+POST http://localhost:8080/api/todos
+Content-Type: application/json
+
+{
+  "title": "履歴書の自己PRを見直す",
+  "category": "就職活動",
+  "priority": 2,
+  "dueDate": "2026-11-04"
+}
+
+### 6. 面接の質問を準備する
+POST http://localhost:8080/api/todos
+Content-Type: application/json
+
+{
+  "title": "面接で聞かれそうな質問を準備する",
+  "category": "就職活動",
+  "priority": 1,
+  "dueDate": "2026-11-04"
+}
+
+### 7. 企業研究をする
+POST http://localhost:8080/api/todos
+Content-Type: application/json
+
+{
+  "title": "応募先企業の事業内容を調べる",
+  "category": "就職活動",
+  "priority": 3,
+  "dueDate": "2026-11-04"
+}
+
+### 7. 企業研究をする
+POST http://localhost:8080/api/todos
+Content-Type: application/json
+
+{
+  "title": "応募する",
+  "category": "就職活動",
+  "priority": 3,
+  "dueDate": "2026-11-04"
+}

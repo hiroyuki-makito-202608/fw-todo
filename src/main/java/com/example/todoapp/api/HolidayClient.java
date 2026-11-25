@@ -28,7 +28,8 @@ public class HolidayClient {
             Map<String, String> holidays = CompletableFuture.supplyAsync(() -> restClient.get()
                     .uri("https://holidays-jp.github.io/api/v1/date.json")
                     .retrieve()
-                    .body(new ParameterizedTypeReference<Map<String, String>>() {}))
+                    .body(new ParameterizedTypeReference<Map<String, String>>() {
+                    }))
                     .get(8, TimeUnit.SECONDS);
             return new HolidayResult(holidays, false);
         } catch (TimeoutException e) {

@@ -176,3 +176,7 @@ body {
 .overdue-todo {
     color: #dc2626;
 }
+
+.todo-table tr.overdue-row {
+    background-color: #fee2e2;
+}

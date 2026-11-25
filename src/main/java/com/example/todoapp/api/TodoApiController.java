@@ -1,10 +1,14 @@
 package com.example.todoapp.api;
 
 import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,7 +50,8 @@ public class TodoApiController {
     }
 
     @PostMapping("/api/todos")
-    public ResponseEntity<TodoDto> createTodo(@RequestBody Todo todo) {
+    public ResponseEntity<TodoDto> createTodo(@Valid @RequestBody TodoRequest request) {
+        Todo todo = request.toTodo();
         if (todo.getCompleted() == null) {
             todo.setCompleted(false);
         }
@@ -60,10 +65,11 @@ public class TodoApiController {
     }
 
     @PutMapping("/api/todos/{id}")
-    public ResponseEntity<?> replaceTodo(@PathVariable Long id, @RequestBody Todo todo) {
+    public ResponseEntity<?> replaceTodo(@PathVariable Long id, @Valid @RequestBody TodoRequest request) {
         if (todoService.findById(id) == null) {
             return notFound(id);
         }
+        Todo todo = request.toTodo();
         todo.setId(id);
         todoService.update(todo);
         return ResponseEntity.ok(TodoDto.from(todoService.findById(id)));
@@ -85,5 +91,22 @@ public class TodoApiController {
     }
 
     public record ApiError(String type, String title, int status, String detail, String instance) {
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ValidationError> handleValidation(MethodArgumentNotValidException exception,
+            HttpServletRequest request) {
+        List<ValidationFieldError> errors = exception.getBindingResult().getFieldErrors().stream()
+                .map(error -> new ValidationFieldError(error.getField(), error.getDefaultMessage()))
+                .toList();
+        return ResponseEntity.badRequest().body(new ValidationError("about:blank", "Bad Request", 400,
+                "入力に誤りがあります", request.getRequestURI(), errors));
+    }
+
+    public record ValidationFieldError(String field, String message) {
+    }
+
+    public record ValidationError(String type, String title, int status, String detail, String instance,
+            List<ValidationFieldError> errors) {
     }
 }

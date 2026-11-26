@@ -51,7 +51,8 @@ public class TodoTools {
             @McpToolParam(required = true, description = "Priority") Integer priority,
             @McpToolParam(required = false, description = "Detail") String detail,
             @McpToolParam(required = false, description = "Due date (yyyy-MM-dd)") String dueDate,
-            @McpToolParam(required = false, description = "Completed state") Boolean completed) {
+            @McpToolParam(required = false, description = "Completed state") Boolean completed,
+            @McpToolParam(required = false, description = "Status: TODO (not started), IN_PROGRESS (in progress), or COMPLETED (completed)") String status) {
         validateCategory(category);
         Todo todo = new Todo();
         todo.setTitle(title);
@@ -60,6 +61,11 @@ public class TodoTools {
         todo.setPriority(priority);
         todo.setDueDate(parseDate(dueDate));
         todo.setCompleted(completed == null ? false : completed);
+        if (status != null) {
+            validateStatus(status);
+            todo.setStatus(status);
+            todo.setCompleted("COMPLETED".equals(status));
+        }
         todoService.create(todo);
         Todo created = todoService.findById(todo.getId());
         return created == null ? null : TodoDto.from(created);
@@ -73,7 +79,8 @@ public class TodoTools {
             @McpToolParam(required = false, description = "Category") String category,
             @McpToolParam(required = false, description = "Priority") Integer priority,
             @McpToolParam(required = false, description = "Due date (yyyy-MM-dd)") String dueDate,
-            @McpToolParam(required = false, description = "Completed state") Boolean completed) {
+            @McpToolParam(required = false, description = "Completed state") Boolean completed,
+            @McpToolParam(required = false, description = "Status: TODO (not started), IN_PROGRESS (in progress), or COMPLETED (completed)") String status) {
         Todo todo = todoService.findById(id);
         if (todo == null) {
             return null;
@@ -87,6 +94,11 @@ public class TodoTools {
         if (priority != null) todo.setPriority(priority);
         if (dueDate != null) todo.setDueDate(LocalDate.parse(dueDate));
         if (completed != null) todo.setCompleted(completed);
+        if (status != null) {
+            validateStatus(status);
+            todo.setStatus(status);
+            todo.setCompleted("COMPLETED".equals(status));
+        }
         todoService.update(todo);
         Todo updated = todoService.findById(id);
         return updated == null ? null : TodoDto.from(updated);
@@ -102,6 +114,18 @@ public class TodoTools {
         todoService.update(todo);
         Todo completed = todoService.findById(id);
         return completed == null ? null : TodoDto.from(completed);
+    }
+
+    @McpTool(name = "update_todo_status", description = "ToDoの状態を未着手・進行中・完了に変更する")
+    public TodoDto updateTodoStatus(
+            @McpToolParam(required = true, description = "Todo ID") Long id,
+            @McpToolParam(required = true, description = "Status: TODO (not started), IN_PROGRESS (in progress), or COMPLETED (completed)") String status) {
+        validateStatus(status);
+        if (!todoService.updateStatus(id, status)) {
+            return null;
+        }
+        Todo updated = todoService.findById(id);
+        return updated == null ? null : TodoDto.from(updated);
     }
 
     @McpTool(name = "delete_todo", description = "\u3084\u308B\u3053\u3068\u30921\u4EF6\u6D88\u3059")
@@ -140,6 +164,12 @@ public class TodoTools {
     private void validateCategory(String category) {
         if (category == null || category.isBlank() || category.length() > 255) {
             throw new IllegalArgumentException("Category must contain 1 to 255 characters");
+        }
+    }
+
+    private void validateStatus(String status) {
+        if (!List.of("TODO", "IN_PROGRESS", "COMPLETED").contains(status)) {
+            throw new IllegalArgumentException("Status must be TODO, IN_PROGRESS, or COMPLETED");
         }
     }
 }

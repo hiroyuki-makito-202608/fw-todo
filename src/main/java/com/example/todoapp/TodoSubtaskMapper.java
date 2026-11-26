@@ -9,7 +9,8 @@ import org.apache.ibatis.annotations.Param;
 public interface TodoSubtaskMapper {
     List<TodoSubtask> findByTodoId(@Param("todoId") Long todoId);
     int deleteByTodoId(@Param("todoId") Long todoId);
-    int insert(@Param("todoId") Long todoId, @Param("title") String title,
-            @Param("position") int position, @Param("completed") boolean completed);
+    int insert(TodoSubtask subtask);
     int updateCompleted(@Param("id") Long id, @Param("todoId") Long todoId, @Param("completed") boolean completed);
+    int update(TodoSubtask subtask);
+    int delete(@Param("id") Long id, @Param("todoId") Long todoId);
 }

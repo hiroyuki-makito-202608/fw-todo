@@ -71,6 +71,71 @@ public class TodoService {
         return subtaskMapper.findByTodoId(todoId);
     }
 
+    public List<TodoSubtask> findTodoSubtasks(Long todoId) {
+        if (todoMapper.findById(todoId) == null) {
+            throw new TodoSubtaskNotFoundException("Todo was not found.");
+        }
+        return subtaskMapper.findByTodoId(todoId);
+    }
+
+    @Transactional
+    public TodoSubtask addSubtask(Long todoId, String title) {
+        if (todoMapper.findByIdForUpdate(todoId) == null) {
+            throw new TodoSubtaskNotFoundException("Todo was not found.");
+        }
+        List<TodoSubtask> current = subtaskMapper.findByTodoId(todoId);
+        if (current.size() >= 10) {
+            throw new IllegalArgumentException("A todo can have at most 10 subtasks.");
+        }
+        TodoSubtask subtask = new TodoSubtask();
+        subtask.setTodoId(todoId);
+        subtask.setTitle(validateSubtaskTitle(title));
+        subtask.setPosition(current.stream()
+                .map(TodoSubtask::getPosition)
+                .filter(java.util.Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .max().orElse(-1) + 1);
+        subtask.setCompleted(false);
+        subtaskMapper.insert(subtask);
+        return subtask;
+    }
+
+    @Transactional
+    public TodoSubtask updateSubtask(Long todoId, Long subtaskId, String title,
+            Boolean completed, Integer position) {
+        if (todoMapper.findById(todoId) == null) {
+            throw new TodoSubtaskNotFoundException("Todo was not found.");
+        }
+        if (title == null && completed == null && position == null) {
+            throw new IllegalArgumentException("At least one subtask field must be provided.");
+        }
+        if (title != null) {
+            title = validateSubtaskTitle(title);
+        }
+        if (position != null && position < 0) {
+            throw new IllegalArgumentException("Position must be zero or greater.");
+        }
+        TodoSubtask subtask = subtaskMapper.findByTodoId(todoId).stream()
+                .filter(item -> item.getId().equals(subtaskId))
+                .findFirst().orElseThrow(() -> new TodoSubtaskNotFoundException("Subtask was not found."));
+        if (title != null) subtask.setTitle(title);
+        if (completed != null) subtask.setCompleted(completed);
+        if (position != null) subtask.setPosition(position);
+        subtaskMapper.update(subtask);
+        return subtask;
+    }
+
+    @Transactional
+    public boolean deleteSubtask(Long todoId, Long subtaskId) {
+        if (todoMapper.findById(todoId) == null) {
+            throw new TodoSubtaskNotFoundException("Todo was not found.");
+        }
+        if (subtaskMapper.delete(subtaskId, todoId) == 0) {
+            throw new TodoSubtaskNotFoundException("Subtask was not found.");
+        }
+        return true;
+    }
+
     public boolean updateSubtaskCompleted(Long todoId, Long subtaskId, boolean completed) {
         return subtaskMapper.updateCompleted(subtaskId, todoId, completed) > 0;
     }
@@ -89,6 +154,14 @@ public class TodoService {
         todo.setSubtasks(subtasks);
     }
 
+    private String validateSubtaskTitle(String title) {
+        String normalized = title == null ? "" : title.trim();
+        if (normalized.isEmpty() || normalized.length() > 255) {
+            throw new IllegalArgumentException("Subtask title must contain 1 to 255 characters.");
+        }
+        return normalized;
+    }
+
     private void saveSubtasks(Todo todo) {
         java.util.Map<String, java.util.ArrayDeque<Boolean>> completionByTitle = new java.util.HashMap<>();
         for (TodoSubtask old : subtaskMapper.findByTodoId(todo.getId())) {
@@ -100,7 +173,12 @@ public class TodoService {
             String title = todo.getSubtasks().get(i);
             java.util.ArrayDeque<Boolean> priorStates = completionByTitle.get(title);
             boolean completed = priorStates != null && !priorStates.isEmpty() && priorStates.removeFirst();
-            subtaskMapper.insert(todo.getId(), title, i, completed);
+            TodoSubtask subtask = new TodoSubtask();
+            subtask.setTodoId(todo.getId());
+            subtask.setTitle(title);
+            subtask.setPosition(i);
+            subtask.setCompleted(completed);
+            subtaskMapper.insert(subtask);
         }
     }
 

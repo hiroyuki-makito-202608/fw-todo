@@ -6,11 +6,23 @@
         FROM todo_subtasks WHERE todo_id = #{todoId} ORDER BY position, id
     </select>
     <delete id="deleteByTodoId">DELETE FROM todo_subtasks WHERE todo_id = #{todoId}</delete>
-    <insert id="insert">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO todo_subtasks (todo_id, title, position, completed)
         VALUES (#{todoId}, #{title}, #{position}, #{completed})
     </insert>
     <update id="updateCompleted">
         UPDATE todo_subtasks SET completed = #{completed} WHERE id = #{id} AND todo_id = #{todoId}
     </update>
+    <update id="update">
+        UPDATE todo_subtasks
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="completed != null">completed = #{completed},</if>
+            <if test="position != null">position = #{position},</if>
+        </set>
+        WHERE id = #{id} AND todo_id = #{todoId}
+    </update>
+    <delete id="delete">
+        DELETE FROM todo_subtasks WHERE id = #{id} AND todo_id = #{todoId}
+    </delete>
 </mapper>

@@ -22,6 +22,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.example.todoapp.Todo;
+import com.example.todoapp.TodoSubtask;
+import com.example.todoapp.TodoSubtaskNotFoundException;
 import com.example.todoapp.TodoService;
 
 @RestController
@@ -103,10 +105,45 @@ public class TodoApiController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/api/todos/{todoId}/subtasks")
+    public ResponseEntity<?> getTodoSubtasks(@PathVariable Long todoId) {
+        List<TodoSubtask> subtasks = todoService.findTodoSubtasks(todoId);
+        return ResponseEntity.ok(subtasks.stream().map(TodoSubtaskDto::from).toList());
+    }
+
+    @PostMapping("/api/todos/{todoId}/subtasks")
+    public ResponseEntity<?> addTodoSubtask(@PathVariable Long todoId,
+            @Valid @RequestBody TodoSubtaskCreateRequest request) {
+        TodoSubtask created = todoService.addSubtask(todoId, request.title());
+        var location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/todos/{todoId}/subtasks/{subtaskId}")
+                .buildAndExpand(todoId, created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(TodoSubtaskDto.from(created));
+    }
+
+    @PatchMapping("/api/todos/{todoId}/subtasks/{subtaskId}")
+    public ResponseEntity<?> updateTodoSubtask(@PathVariable Long todoId, @PathVariable Long subtaskId,
+            @Valid @RequestBody TodoSubtaskUpdateRequest request) {
+        TodoSubtask updated = todoService.updateSubtask(todoId, subtaskId,
+                request.title(), request.completed(), request.position());
+        return ResponseEntity.ok(TodoSubtaskDto.from(updated));
+    }
+
+    @DeleteMapping("/api/todos/{todoId}/subtasks/{subtaskId}")
+    public ResponseEntity<?> deleteTodoSubtask(@PathVariable Long todoId, @PathVariable Long subtaskId) {
+        todoService.deleteSubtask(todoId, subtaskId);
+        return ResponseEntity.noContent().build();
+    }
+
     private ResponseEntity<ApiError> notFound(Long id) {
+        return notFound("/api/todos/" + id);
+    }
+
+    private ResponseEntity<ApiError> notFound(String instance) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiError("about:blank", "Not Found", 404,
-                        "指定したやることが見つかりません。", "/api/todos/" + id));
+                        "指定したデータが見つかりません。", instance));
     }
 
     public record ApiError(String type, String title, int status, String detail, String instance) {
@@ -127,5 +164,19 @@ public class TodoApiController {
 
     public record ValidationError(String type, String title, int status, String detail, String instance,
             List<ValidationFieldError> errors) {
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleInvalidInput(IllegalArgumentException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(new ApiError("about:blank", "Bad Request", 400,
+                exception.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(TodoSubtaskNotFoundException.class)
+    public ResponseEntity<ApiError> handleSubtaskNotFound(TodoSubtaskNotFoundException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError("about:blank", "Not Found", 404,
+                exception.getMessage(), request.getRequestURI()));
     }
 }

@@ -10,9 +10,11 @@ import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Component;
 
 import com.example.todoapp.Todo;
+import com.example.todoapp.TodoSubtask;
 import com.example.todoapp.TodoService;
 import com.example.todoapp.api.HolidayClient;
 import com.example.todoapp.api.TodoDto;
+import com.example.todoapp.api.TodoSubtaskDto;
 
 @Component
 public class TodoTools {
@@ -126,6 +128,39 @@ public class TodoTools {
         }
         Todo updated = todoService.findById(id);
         return updated == null ? null : TodoDto.from(updated);
+    }
+
+    @McpTool(name = "list_todo_subtasks", description = "ToDoのサブタスク一覧を取得する")
+    public List<TodoSubtaskDto> listTodoSubtasks(
+            @McpToolParam(required = true, description = "Todo ID") Long todoId) {
+        List<TodoSubtask> subtasks = todoService.findTodoSubtasks(todoId);
+        return subtasks.stream().map(TodoSubtaskDto::from).toList();
+    }
+
+    @McpTool(name = "add_todo_subtask", description = "ToDoにサブタスクを追加する。1件のToDoにつき最大10件")
+    public TodoSubtaskDto addTodoSubtask(
+            @McpToolParam(required = true, description = "Todo ID") Long todoId,
+            @McpToolParam(required = true, description = "Subtask title, 1 to 255 characters") String title) {
+        TodoSubtask subtask = todoService.addSubtask(todoId, title);
+        return TodoSubtaskDto.from(subtask);
+    }
+
+    @McpTool(name = "update_todo_subtask", description = "サブタスクのタイトル、完了状態、表示順を更新する。いずれか1項目以上を指定")
+    public TodoSubtaskDto updateTodoSubtask(
+            @McpToolParam(required = true, description = "Todo ID") Long todoId,
+            @McpToolParam(required = true, description = "Subtask ID") Long subtaskId,
+            @McpToolParam(required = false, description = "New title, 1 to 255 characters") String title,
+            @McpToolParam(required = false, description = "Completion state") Boolean completed,
+            @McpToolParam(required = false, description = "Display position, zero or greater") Integer position) {
+        TodoSubtask subtask = todoService.updateSubtask(todoId, subtaskId, title, completed, position);
+        return TodoSubtaskDto.from(subtask);
+    }
+
+    @McpTool(name = "delete_todo_subtask", description = "ToDoから指定したサブタスクを削除する")
+    public boolean deleteTodoSubtask(
+            @McpToolParam(required = true, description = "Todo ID") Long todoId,
+            @McpToolParam(required = true, description = "Subtask ID") Long subtaskId) {
+        return todoService.deleteSubtask(todoId, subtaskId);
     }
 
     @McpTool(name = "delete_todo", description = "\u3084\u308B\u3053\u3068\u30921\u4EF6\u6D88\u3059")

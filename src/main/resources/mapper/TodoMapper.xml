@@ -64,6 +64,15 @@
         WHERE t.id = #{id}
     </select>
 
+    <select id="findByIdForUpdate" resultType="com.example.todoapp.Todo">
+        SELECT t.id, t.title, t.detail, c.name AS category, t.priority, t.due_date, t.completed,
+               CASE WHEN t.completed = TRUE THEN 'COMPLETED' ELSE t.status END AS status,
+               t.created_at, t.updated_at
+        FROM todos t JOIN todo_categories c ON c.id = t.category_id
+        WHERE t.id = #{id}
+        FOR UPDATE
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO todos (title, detail, category, category_id, priority, due_date, completed, status)
         VALUES (#{title}, #{detail}, #{category}, (SELECT id FROM todo_categories WHERE name = #{category}), #{priority}, #{dueDate}, #{completed},

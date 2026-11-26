@@ -2,23 +2,29 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.todoapp.TodoMapper">
     <select id="search" resultType="com.example.todoapp.Todo">
-        SELECT id, title, detail, category, priority, due_date, completed, created_at, updated_at
-        FROM todos
+        SELECT t.id, t.title, t.detail, t.category, t.priority, t.due_date, t.completed,
+               t.created_at, t.updated_at, COALESCE(a.attachment_count, 0) AS attachment_count
+        FROM todos t
+        LEFT JOIN (
+            SELECT todo_id, COUNT(*) AS attachment_count
+            FROM todo_attachments
+            GROUP BY todo_id
+        ) a ON a.todo_id = t.id
         <where>
             <if test="keyword != null and keyword != ''">
-                AND title LIKE CONCAT('%', #{keyword}, '%')
+                AND t.title LIKE CONCAT('%', #{keyword}, '%')
             </if>
             <if test="category != null and category != ''">
-                AND category = #{category}
+                AND t.category = #{category}
             </if>
             <if test="from != null">
-                AND due_date &gt;= #{from}
+                AND t.due_date &gt;= #{from}
             </if>
             <if test="to != null">
-                AND due_date &lt;= #{to}
+                AND t.due_date &lt;= #{to}
             </if>
         </where>
-        ORDER BY due_date ${order}
+        ORDER BY t.due_date ${order}
     </select>
 
     <select id="findById" parameterType="long" resultType="com.example.todoapp.Todo">

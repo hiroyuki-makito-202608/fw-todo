@@ -9,7 +9,7 @@
 <body>
     <main class="container">
         <h1 class="page-title">やること登録</h1>
-        <form th:action="@{/todos/confirm}" th:object="${todo}" method="post">
+        <form th:action="@{/todos/confirm}" th:object="${todo}" method="post" enctype="multipart/form-data">
             <div class="form-row">
                 <label class="form-label" for="title">やること</label>
                 <input class="form-input" id="title" type="text" th:field="*{title}">
@@ -45,6 +45,10 @@
             <div class="form-row">
                 <label class="form-label" for="dueDate">期限</label>
                 <input class="form-input" id="dueDate" type="date" th:field="*{dueDate}">
+            </div>
+            <div class="form-row">
+                <label class="form-label" for="attachment">添付ファイル（10MBまで）</label>
+                <input class="form-input" id="attachment" type="file" name="attachment">
             </div>
             <button class="btn" type="submit">確認する</button>
             <a class="btn sub" href="/todos">一覧へ</a>

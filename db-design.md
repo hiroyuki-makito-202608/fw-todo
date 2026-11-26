@@ -2,7 +2,7 @@
 
 ## 1. 目的と前提
 
-この文書は `requirements.md` と `handout_app_spec.md` に基づき、ToDoアプリのデータベースを定義します。データベースは MySQL とし、アプリが使うテーブルは `todos` の1つです。画面の配置や操作の詳細は、この設計書の対象外です。
+この文書は `requirements.md` と `handout_app_spec.md` に基づき、ToDoアプリのデータベースを定義します。データベースは MySQL とします。画面の配置や操作の詳細は、この設計書の対象外です。
 
 用語：テーブルは、同じ種類のデータを行と列で保存する表です。
 
@@ -11,6 +11,7 @@
 | テーブル名 | 用途 |
 |---|---|
 | `todos` | やることと、その分類・期限・状態・日時を1件ずつ保存します。 |
+| `todo_attachments` | ToDoに添付されたファイルのメタ情報を保存します。 |
 
 ## 3. `todos` テーブル
 
@@ -78,6 +79,23 @@ CREATE TABLE todos (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT chk_todos_priority CHECK (priority IN (1, 2, 3))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+添付ファイルを使う環境では、上記の `todos` 作成後に次のテーブルも作成します。
+
+```sql
+CREATE TABLE todo_attachments (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    todo_id BIGINT NOT NULL,
+    original_file_name VARCHAR(255) NOT NULL,
+    stored_file_name VARCHAR(255) NOT NULL,
+    content_type VARCHAR(255) NULL,
+    file_size BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_todo_attachments_todo FOREIGN KEY (todo_id) REFERENCES todos(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_todo_attachments_stored_file_name (stored_file_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 

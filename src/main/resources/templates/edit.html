@@ -9,6 +9,18 @@
 <body>
     <main class="container">
         <h1 class="page-title">やること編集</h1>
+        <section class="form-row">
+            <h2>添付ファイル</h2>
+            <ul><li th:each="attachment : ${attachments}">
+                <a th:href="@{/attachments/{id}/download(id=${attachment.id})}" th:text="${attachment.originalFileName}"></a>
+                <form th:action="@{/attachments/{id}/delete(id=${attachment.id})}" method="post" style="display:inline">
+                    <input type="hidden" name="todoId" th:value="${todo.id}"><button type="submit">削除</button>
+                </form>
+            </li></ul>
+            <form th:action="@{/todos/{id}/attachments(id=${todo.id})}" method="post" enctype="multipart/form-data">
+                <input type="file" name="attachment" required><button type="submit">添付</button>
+            </form>
+        </section>
         <form th:action="@{/todos/{id}/confirm(id=${todo.id})}" th:object="${todo}" method="post">
             <div class="form-row">
                 <label class="form-label" for="title">やること</label>

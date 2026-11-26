@@ -16,7 +16,7 @@
         <p class="confirm-value">期限：<span th:text="${todo.dueDate == null ? '（入力なし）' : todo.dueDate}">期限</span></p>
         <p class="confirm-value" th:if="${attachmentName != null}">添付ファイル：<span th:text="${attachmentName}"></span></p>
         <div class="confirm-actions">
-            <form action="/todos" method="post">
+            <form th:action="@{/todos}" method="post">
                 <input type="hidden" name="title" th:value="${todo.title}">
                 <input type="hidden" name="detail" th:value="${todo.detail}">
                 <input type="hidden" name="category" th:value="${todo.category}">
@@ -25,7 +25,7 @@
                 <input type="hidden" name="attachmentToken" th:value="${attachmentToken}">
                 <button class="btn" type="submit">登録する</button>
             </form>
-            <form action="/todos/new" method="post">
+            <form th:action="@{/todos/new}" method="post">
                 <input type="hidden" name="title" th:value="${todo.title}">
                 <input type="hidden" name="detail" th:value="${todo.detail}">
                 <input type="hidden" name="category" th:value="${todo.category}">

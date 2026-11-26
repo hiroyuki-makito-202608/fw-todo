@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,6 +53,20 @@ public class TodoApiController {
         }
         return ResponseEntity.ok(TodoDto.from(todo));
     }
+
+    @PatchMapping("/api/todo/{id}/status")
+    public ResponseEntity<?> updateTodoStatus(@PathVariable Long id, @RequestBody StatusUpdate request) {
+        if (request == null || request.status() == null
+                || !List.of("TODO", "IN_PROGRESS", "COMPLETED").contains(request.status())) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid status"));
+        }
+        if (!todoService.updateStatus(id, request.status())) {
+            return notFound(id);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    public record StatusUpdate(String status) { }
 
     @PostMapping("/api/todos")
     public ResponseEntity<TodoDto> createTodo(@Valid @RequestBody TodoRequest request) {

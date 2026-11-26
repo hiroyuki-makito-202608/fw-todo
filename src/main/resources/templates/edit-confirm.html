@@ -9,12 +9,12 @@
 <body>
     <main class="container">
         <h1 class="page-title">編集内容の確認</h1>
-        <p class="confirm-value">やること：<span th:text="${#strings.isEmpty(todo.title) ? '（入力なし）' : todo.title}">やること</span></p>
-        <p class="confirm-value">メモ：<span th:text="${#strings.isEmpty(todo.detail) ? '（入力なし）' : todo.detail}">メモ</span></p>
-        <p class="confirm-value">ジャンル：<span th:text="${#strings.isEmpty(todo.category) ? '（入力なし）' : todo.category}">ジャンル</span></p>
-        <p class="confirm-value">優先度：<span th:text="${todo.priority == null ? '（入力なし）' : (todo.priority == 1 ? '高' : (todo.priority == 2 ? '中' : '低'))}">優先度</span></p>
-        <p class="confirm-value">期限：<span th:text="${todo.dueDate == null ? '（入力なし）' : todo.dueDate}">期限</span></p>
-        <p class="confirm-value">完了：<span th:text="${todo.completed == null ? '（入力なし）' : (todo.completed ? '完了' : '未完了')}">完了</span></p>
+        <p class="confirm-value">やること：<span th:text="${todo.title}"></span></p>
+        <p class="confirm-value">メモ：<span th:text="${todo.detail}"></span></p>
+        <p class="confirm-value">ジャンル：<span th:text="${todo.category}"></span></p>
+        <p class="confirm-value">優先度：<span th:text="${todo.priority == 1 ? '高' : (todo.priority == 2 ? '中' : '低')}"></span></p>
+        <p class="confirm-value">期限：<span th:text="${todo.dueDate}"></span></p>
+        <p class="confirm-value">状態：<span th:text="${todo.status == 'IN_PROGRESS' ? '進行中' : (todo.status == 'COMPLETED' ? '完了' : '未着手')}"></span></p>
         <div class="confirm-actions">
             <form th:action="@{/todos/{id}(id=${todo.id})}" method="post">
                 <input type="hidden" name="title" th:value="${todo.title}">
@@ -22,7 +22,7 @@
                 <input type="hidden" name="category" th:value="${todo.category}">
                 <input type="hidden" name="priority" th:value="${todo.priority}">
                 <input type="hidden" name="dueDate" th:value="${todo.dueDate}">
-                <input type="hidden" name="completed" th:value="${todo.completed}">
+                <input type="hidden" name="status" th:value="${todo.status}">
                 <button class="btn" type="submit">保存する</button>
             </form>
             <form th:action="@{/todos/{id}/edit(id=${todo.id})}" method="post">
@@ -31,7 +31,7 @@
                 <input type="hidden" name="category" th:value="${todo.category}">
                 <input type="hidden" name="priority" th:value="${todo.priority}">
                 <input type="hidden" name="dueDate" th:value="${todo.dueDate}">
-                <input type="hidden" name="completed" th:value="${todo.completed}">
+                <input type="hidden" name="status" th:value="${todo.status}">
                 <button class="btn sub" type="submit">書き直す</button>
             </form>
         </div>

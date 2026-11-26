@@ -3,6 +3,7 @@ package com.example.todoapp;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -57,6 +58,15 @@ public class HomeController {
         model.addAttribute("category", category);
         model.addAttribute("order", order);
         return "todos";
+    }
+
+    @GetMapping("/kanban")
+    public String kanban(Model model) {
+        List<Todo> todos = todoService.findAllForKanban();
+        model.addAttribute("todoCards", todos.stream().filter(todo -> "TODO".equals(todo.getStatus())).toList());
+        model.addAttribute("inProgressCards", todos.stream().filter(todo -> "IN_PROGRESS".equals(todo.getStatus())).toList());
+        model.addAttribute("completedCards", todos.stream().filter(todo -> "COMPLETED".equals(todo.getStatus())).toList());
+        return "kanban";
     }
 
     @GetMapping("/todos/new")

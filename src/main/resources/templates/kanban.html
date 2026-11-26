@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>カンバンボード</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <main class="container kanban-container">
+        <div class="kanban-heading">
+            <h1 class="page-title">カンバンボード</h1>
+            <a class="btn sub" href="/todos">一覧へ戻る</a>
+        </div>
+        <p id="kanban-message" class="flash" role="status" aria-live="polite"></p>
+        <div class="kanban-board">
+            <section class="kanban-column" data-status="TODO" aria-label="未着手">
+                <h2>未着手 <span th:text="${#lists.size(todoCards)}">0</span></h2>
+                <div class="kanban-dropzone" data-status="TODO">
+                    <article class="kanban-card" th:each="todo : ${todoCards}" draggable="true" th:attr="data-id=${todo.id}">
+                        <a th:href="@{/todos/{id}/edit(id=${todo.id})}" th:text="${todo.title}">タスク名</a>
+                        <p th:text="${todo.category}">ジャンル</p>
+                        <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>
+                    </article>
+                </div>
+            </section>
+            <section class="kanban-column" data-status="IN_PROGRESS" aria-label="進行中">
+                <h2>進行中 <span th:text="${#lists.size(inProgressCards)}">0</span></h2>
+                <div class="kanban-dropzone" data-status="IN_PROGRESS">
+                    <article class="kanban-card" th:each="todo : ${inProgressCards}" draggable="true" th:attr="data-id=${todo.id}">
+                        <a th:href="@{/todos/{id}/edit(id=${todo.id})}" th:text="${todo.title}">タスク名</a>
+                        <p th:text="${todo.category}">ジャンル</p>
+                        <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>
+                    </article>
+                </div>
+            </section>
+            <section class="kanban-column" data-status="COMPLETED" aria-label="完了">
+                <h2>完了 <span th:text="${#lists.size(completedCards)}">0</span></h2>
+                <div class="kanban-dropzone" data-status="COMPLETED">
+                    <article class="kanban-card" th:each="todo : ${completedCards}" draggable="true" th:attr="data-id=${todo.id}">
+                        <a th:href="@{/todos/{id}/edit(id=${todo.id})}" th:text="${todo.title}">タスク名</a>
+                        <p th:text="${todo.category}">ジャンル</p>
+                        <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script>
+        (() => {
+            const token = document.querySelector('meta[name="_csrf"]').content;
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+            const message = document.getElementById('kanban-message');
+            let draggedCard = null;
+
+            document.querySelectorAll('.kanban-card').forEach(card => {
+                card.addEventListener('dragstart', event => {
+                    draggedCard = card;
+                    card.classList.add('is-dragging');
+                    event.dataTransfer.setData('text/plain', card.dataset.id);
+                    event.dataTransfer.effectAllowed = 'move';
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('is-dragging');
+                    document.querySelectorAll('.kanban-dropzone').forEach(zone => zone.classList.remove('is-drag-over'));
+                });
+            });
+
+            document.querySelectorAll('.kanban-dropzone').forEach(zone => {
+                zone.addEventListener('dragover', event => {
+                    event.preventDefault();
+                    zone.classList.add('is-drag-over');
+                });
+                zone.addEventListener('dragleave', event => {
+                    if (!zone.contains(event.relatedTarget)) zone.classList.remove('is-drag-over');
+                });
+                zone.addEventListener('drop', async event => {
+                    event.preventDefault();
+                    zone.classList.remove('is-drag-over');
+                    const card = draggedCard;
+                    if (!card || card.parentElement === zone) return;
+                    const previousZone = card.parentElement;
+                    const previousStatus = previousZone.dataset.status;
+                    const targetStatus = zone.dataset.status;
+                    zone.appendChild(card);
+                    updateColumnCounts();
+                    message.textContent = '';
+                    try {
+                        const response = await fetch(`/api/todo/${card.dataset.id}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', [csrfHeader]: token },
+                            body: JSON.stringify({ status: targetStatus })
+                        });
+                        if (!response.ok) {
+                            const body = await response.json().catch(() => ({}));
+                            throw new Error(body.error || `更新に失敗しました (${response.status})`);
+                        }
+                    } catch (error) {
+                        previousZone.appendChild(card);
+                        updateColumnCounts();
+                        message.textContent = `${error.message} カードを元の列に戻しました。`;
+                    }
+                });
+            });
+
+            function updateColumnCounts() {
+                document.querySelectorAll('.kanban-column').forEach(column => {
+                    column.querySelector('h2 span').textContent = column.querySelectorAll('.kanban-card').length;
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

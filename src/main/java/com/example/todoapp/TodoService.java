@@ -32,12 +32,24 @@ public class TodoService {
 
     public int create(Todo todo) {
         todo.setCategory(ensureCategory(todo.getCategory()));
+        if (todo.getCompleted() == null) {
+            todo.setCompleted(false);
+        }
+        if (todo.getStatus() == null || todo.getStatus().isBlank()) {
+            todo.setStatus(Boolean.TRUE.equals(todo.getCompleted()) ? "COMPLETED" : "TODO");
+        }
         log.info("Todo created{}", todo.getId() == null ? "" : ": id=" + todo.getId());
         return todoMapper.insert(todo);
     }
 
     public int update(Todo todo) {
         todo.setCategory(ensureCategory(todo.getCategory()));
+        if (todo.getStatus() == null || todo.getStatus().isBlank()) {
+            todo.setStatus(Boolean.TRUE.equals(todo.getCompleted()) ? "COMPLETED" : "TODO");
+        }
+        if (!List.of("TODO", "IN_PROGRESS", "COMPLETED").contains(todo.getStatus())) {
+            throw new IllegalArgumentException("Invalid status");
+        }
         log.info("Todo updated{}", todo.getId() == null ? "" : ": id=" + todo.getId());
         return todoMapper.update(todo);
     }
@@ -49,6 +61,17 @@ public class TodoService {
 
     public List<String> findCategories() {
         return categoryMapper.findAll();
+    }
+
+    public List<Todo> findAllForKanban() {
+        return todoMapper.findAllForKanban();
+    }
+
+    public boolean updateStatus(Long id, String status) {
+        if (!List.of("TODO", "IN_PROGRESS", "COMPLETED").contains(status)) {
+            throw new IllegalArgumentException("ステータスが不正です。");
+        }
+        return todoMapper.updateStatus(id, status) > 0;
     }
 
     public void addCategory(String name) {

@@ -11,6 +11,10 @@ public interface TodoMapper {
     List<Todo> search(@Param("keyword") String keyword, @Param("category") String category,
             @Param("order") String order, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
+    List<Todo> findAllForKanban();
+
+    int updateStatus(@Param("id") Long id, @Param("status") String status);
+
     Todo findById(Long id);
 
     int insert(Todo todo);

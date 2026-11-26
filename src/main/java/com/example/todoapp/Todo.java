@@ -35,4 +35,5 @@ public class Todo {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer attachmentCount;
+    private String status;
 }

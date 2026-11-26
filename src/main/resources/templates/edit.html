@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>やること編集</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -17,7 +19,7 @@
                     <input type="hidden" name="todoId" th:value="${todo.id}"><button type="submit">削除</button>
                 </form>
             </li></ul>
-            <form th:action="@{/todos/{id}/attachments(id=${todo.id})}" method="post" enctype="multipart/form-data">
+            <form th:action="@{/todos/{id}/attachments(id=${todo.id},_csrf=${_csrf.token})}" method="post" enctype="multipart/form-data">
                 <input type="file" name="attachment" required><button type="submit">添付</button>
             </form>
         </section>
@@ -30,7 +32,6 @@
             <div class="form-row">
                 <label class="form-label" for="detail">メモ</label>
                 <input class="form-input" id="detail" type="text" th:field="*{detail}">
-                <p class="error" th:if="${#fields.hasErrors('detail')}" th:errors="*{detail}"></p>
             </div>
             <div class="form-row">
                 <label class="form-label" for="category">ジャンル</label>
@@ -43,15 +44,13 @@
                     <input class="form-input" id="newCategory" type="text" maxlength="255" placeholder="新しいジャンル名">
                     <button class="btn sub" type="button" id="addCategory">新規登録</button>
                 </div>
-                <p class="category-help">ジャンル名を入力して「新規登録」を押すと、選択肢に追加されます。</p>
+                <p class="category-help">ジャンル名を入力して「新規登録」を押すと保存され、選択肢に追加されます。</p>
             </div>
             <div class="form-row">
                 <label class="form-label" for="priority">優先度</label>
                 <select class="form-input" id="priority" th:field="*{priority}">
                     <option value="">選択してください</option>
-                    <option value="1">高</option>
-                    <option value="2">中</option>
-                    <option value="3">低</option>
+                    <option value="1">高</option><option value="2">中</option><option value="3">低</option>
                 </select>
                 <p class="error" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}"></p>
             </div>
@@ -60,8 +59,12 @@
                 <input class="form-input" id="dueDate" type="date" th:field="*{dueDate}">
             </div>
             <div class="form-row">
-                <label class="form-label" for="completed">完了</label>
-                <input class="form-input" id="completed" type="checkbox" th:field="*{completed}">
+                <label class="form-label" for="status">状態</label>
+                <select class="form-input" id="status" th:field="*{status}">
+                    <option value="TODO">未着手</option>
+                    <option value="IN_PROGRESS">進行中</option>
+                    <option value="COMPLETED">完了</option>
+                </select>
             </div>
             <button class="btn" type="submit">確認する</button>
             <a class="btn sub" href="/todos">一覧へ</a>
@@ -79,11 +82,12 @@
                 input.value = '';
                 return;
             }
-            const body = new URLSearchParams({ name });
+            const token = document.querySelector('meta[name="_csrf"]').content;
+            const header = document.querySelector('meta[name="_csrf_header"]').content;
             fetch('/categories', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', [header]: token },
+                body: new URLSearchParams({ name })
             }).then(async response => {
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.error || 'ジャンルを登録できませんでした。');

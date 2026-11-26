@@ -9,7 +9,7 @@
 <body>
     <main class="container">
         <h1 class="page-title">やること登録</h1>
-        <form th:action="@{/todos/confirm}" th:object="${todo}" method="post" enctype="multipart/form-data">
+        <form th:action="@{/todos/confirm(_csrf=${_csrf.token})}" th:object="${todo}" method="post" enctype="multipart/form-data">
             <div class="form-row">
                 <label class="form-label" for="title">やること</label>
                 <input class="form-input" id="title" type="text" th:field="*{title}">

@@ -2,6 +2,8 @@ package com.example.todoapp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -35,5 +37,8 @@ public class Todo {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer attachmentCount;
+    private Integer subtaskCount;
+    private Integer completedSubtaskCount;
     private String status;
+    private List<String> subtasks = new ArrayList<>();
 }

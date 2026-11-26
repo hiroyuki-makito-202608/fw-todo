@@ -48,7 +48,11 @@
                     <td>
                         <div class="todo-title-cell">
                             <span th:text="${todo.title}">やること</span>
-                            <span class="attachment-badge" th:if="${todo.attachmentCount != null and todo.attachmentCount > 0}">添付有</span>
+                            <span class="todo-badges">
+                                <span class="attachment-badge" th:if="${todo.attachmentCount != null and todo.attachmentCount > 0}">添付有</span>
+                                <span class="subtask-badge" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}"
+                                      th:text="|サブタスク ${todo.completedSubtaskCount}/${todo.subtaskCount}|">サブタスク 0/0</span>
+                            </span>
                         </div>
                     </td>
                     <td th:text="${todo.category}">ジャンル</td>

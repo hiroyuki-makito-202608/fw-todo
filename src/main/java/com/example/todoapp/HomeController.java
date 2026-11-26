@@ -136,7 +136,10 @@ public class HomeController {
             redirectAttributes.addFlashAttribute("message", "見つかりませんでした");
             return "redirect:/todos";
         }
+        List<TodoSubtask> todoSubtasks = todoService.findSubtasks(id);
+        todo.setSubtasks(todoSubtasks.stream().map(TodoSubtask::getTitle).toList());
         model.addAttribute("todo", todo);
+        model.addAttribute("todoSubtasks", todoSubtasks);
         model.addAttribute("attachments", attachmentMapper.findByTodoId(id));
         model.addAttribute("categories", todoService.findCategories());
         return "edit";
@@ -170,6 +173,15 @@ public class HomeController {
         todoService.update(todo);
         redirectAttributes.addFlashAttribute("message", "保存しました");
         return "redirect:/todos";
+    }
+
+    @PostMapping("/todos/{todoId}/subtasks/{subtaskId}/completed")
+    public String updateSubtaskCompleted(@PathVariable Long todoId, @PathVariable Long subtaskId,
+            @RequestParam(defaultValue = "false") boolean completed) {
+        if (todoService.findById(todoId) == null || !todoService.updateSubtaskCompleted(todoId, subtaskId, completed)) {
+            return "redirect:/todos";
+        }
+        return "redirect:/todos/" + todoId + "/edit";
     }
 
     @GetMapping("/todos/{id}/delete")

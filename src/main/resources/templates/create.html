@@ -46,6 +46,13 @@
                 <label class="form-label" for="attachment">添付ファイル（10MBまで）</label>
                 <input class="form-input" id="attachment" type="file" name="attachment">
             </div>
+            <fieldset class="form-row subtask-fields">
+                <legend>サブタスク（最大10件）</legend>
+                <label th:each="i : ${#numbers.sequence(0, 9)}" class="subtask-input-row">
+                    <span th:text="${i + 1}"></span>
+                    <input class="form-input" type="text" th:name="|subtasks[${i}]|" th:value="${todo.subtasks != null and todo.subtasks.size() > i ? todo.subtasks[i] : ''}" maxlength="255" th:attr="aria-label=|サブタスク${i + 1}|">
+                </label>
+            </fieldset>
             <button class="btn" type="submit">確認する</button>
             <a class="btn sub" href="/todos">一覧へ</a>
         </form>

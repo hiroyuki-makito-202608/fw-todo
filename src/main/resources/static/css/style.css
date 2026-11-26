@@ -93,6 +93,56 @@ body {
     font: inherit;
 }
 
+.subtask-fields {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.subtask-details {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px;
+    background: #f8fafc;
+}
+
+.subtask-details > summary {
+    color: #1e293b;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.subtask-list {
+    margin-top: 12px;
+}
+
+.subtask-input-row,
+.subtask-check-row form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+}
+
+.subtask-input-row > span {
+    width: 24px;
+}
+
+.subtask-check-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.subtask-completed {
+    color: #64748b;
+    text-decoration: line-through;
+}
+
+.subtask-state {
+    color: #64748b;
+    font-size: 13px;
+}
+
 .search-bar .form-input {
     width: auto;
 }
@@ -199,11 +249,29 @@ body {
 
 .attachment-badge {
     display: inline-block;
-    margin-left: auto;
+    margin-left: 0;
     border-radius: 999px;
     padding: 0 6px;
     background: #dbeafe;
     color: #1d4ed8;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.todo-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+}
+
+.subtask-badge {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 0 6px;
+    background: #dcfce7;
+    color: #166534;
     font-size: 10px;
     font-weight: 700;
     white-space: nowrap;
@@ -233,10 +301,12 @@ body {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
-    align-items: start;
+    align-items: stretch;
 }
 
 .kanban-column {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     border: 1px solid #cbd5e1;
     border-radius: 10px;
@@ -264,6 +334,8 @@ body {
 
 .kanban-dropzone {
     display: grid;
+    flex: 1;
+    align-content: start;
     min-height: 180px;
     gap: 10px;
     padding: 12px;
@@ -285,12 +357,29 @@ body {
 
 .kanban-card.is-dragging {
     cursor: grabbing;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+.kanban-drag-preview {
+    position: fixed;
+    z-index: 9999;
+    margin: 0;
+    opacity: 1 !important;
+    background: #ffffff !important;
+    filter: none !important;
+    transform: none !important;
+    pointer-events: none;
 }
 
 .kanban-card p {
     margin: 6px 0 2px;
     color: #64748b;
     font-size: 13px;
+}
+
+.kanban-card-badges {
+    margin-top: 6px;
 }
 
 .kanban-card small {

@@ -4,7 +4,9 @@
     <select id="search" resultType="com.example.todoapp.Todo">
         SELECT t.id, t.title, t.detail, c.name AS category, t.priority, t.due_date, t.completed,
                CASE WHEN t.completed = TRUE THEN 'COMPLETED' ELSE t.status END AS status,
-               t.created_at, t.updated_at, COALESCE(a.attachment_count, 0) AS attachment_count
+               t.created_at, t.updated_at, COALESCE(a.attachment_count, 0) AS attachment_count,
+               COALESCE(s.subtask_count, 0) AS subtask_count,
+               COALESCE(s.completed_subtask_count, 0) AS completed_subtask_count
         FROM todos t
         JOIN todo_categories c ON c.id = t.category_id
         LEFT JOIN (
@@ -12,6 +14,12 @@
             FROM todo_attachments
             GROUP BY todo_id
         ) a ON a.todo_id = t.id
+        LEFT JOIN (
+            SELECT todo_id, COUNT(*) AS subtask_count,
+                   SUM(CASE WHEN completed = TRUE THEN 1 ELSE 0 END) AS completed_subtask_count
+            FROM todo_subtasks
+            GROUP BY todo_id
+        ) s ON s.todo_id = t.id
         <where>
             <if test="keyword != null and keyword != ''">
                 AND t.title LIKE CONCAT('%', #{keyword}, '%')
@@ -32,8 +40,15 @@
     <select id="findAllForKanban" resultType="com.example.todoapp.Todo">
         SELECT t.id, t.title, t.detail, c.name AS category, t.priority, t.due_date,
                t.completed, CASE WHEN t.completed = TRUE THEN 'COMPLETED' ELSE t.status END AS status,
-               t.created_at, t.updated_at
+               t.created_at, t.updated_at, COALESCE(s.subtask_count, 0) AS subtask_count,
+               COALESCE(s.completed_subtask_count, 0) AS completed_subtask_count
         FROM todos t JOIN todo_categories c ON c.id = t.category_id
+        LEFT JOIN (
+            SELECT todo_id, COUNT(*) AS subtask_count,
+                   SUM(CASE WHEN completed = TRUE THEN 1 ELSE 0 END) AS completed_subtask_count
+            FROM todo_subtasks
+            GROUP BY todo_id
+        ) s ON s.todo_id = t.id
         ORDER BY t.due_date, t.id
     </select>
 

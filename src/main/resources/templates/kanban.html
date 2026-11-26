@@ -21,6 +21,9 @@
                 <div class="kanban-dropzone" data-status="TODO">
                     <article class="kanban-card" th:each="todo : ${todoCards}" draggable="true" th:attr="data-id=${todo.id}">
                         <a th:href="@{/todos/{id}/edit(id=${todo.id})}" th:text="${todo.title}">タスク名</a>
+                        <div class="kanban-card-badges" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}">
+                            <span class="subtask-badge" th:text="|サブタスク ${todo.completedSubtaskCount}/${todo.subtaskCount}|">サブタスク 0/0</span>
+                        </div>
                         <p th:text="${todo.category}">ジャンル</p>
                         <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>
                     </article>
@@ -31,6 +34,9 @@
                 <div class="kanban-dropzone" data-status="IN_PROGRESS">
                     <article class="kanban-card" th:each="todo : ${inProgressCards}" draggable="true" th:attr="data-id=${todo.id}">
                         <a th:href="@{/todos/{id}/edit(id=${todo.id})}" th:text="${todo.title}">タスク名</a>
+                        <div class="kanban-card-badges" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}">
+                            <span class="subtask-badge" th:text="|サブタスク ${todo.completedSubtaskCount}/${todo.subtaskCount}|">サブタスク 0/0</span>
+                        </div>
                         <p th:text="${todo.category}">ジャンル</p>
                         <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>
                     </article>
@@ -41,6 +47,9 @@
                 <div class="kanban-dropzone" data-status="COMPLETED">
                     <article class="kanban-card" th:each="todo : ${completedCards}" draggable="true" th:attr="data-id=${todo.id}">
                         <a th:href="@{/todos/{id}/edit(id=${todo.id})}" th:text="${todo.title}">タスク名</a>
+                        <div class="kanban-card-badges" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}">
+                            <span class="subtask-badge" th:text="|サブタスク ${todo.completedSubtaskCount}/${todo.subtaskCount}|">サブタスク 0/0</span>
+                        </div>
                         <p th:text="${todo.category}">ジャンル</p>
                         <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>
                     </article>
@@ -59,11 +68,39 @@
                 card.addEventListener('dragstart', event => {
                     draggedCard = card;
                     card.classList.add('is-dragging');
+                    const preview = card.cloneNode(true);
+                    const rect = card.getBoundingClientRect();
+                    preview.classList.add('kanban-drag-preview');
+                    preview.style.width = `${rect.width}px`;
+                    preview.style.height = `${rect.height}px`;
+                    preview.style.left = `${rect.left}px`;
+                    preview.style.top = `${rect.top}px`;
+                    document.body.appendChild(preview);
+                    card._dragPreview = preview;
+                    card._dragOffsetX = event.clientX - rect.left;
+                    card._dragOffsetY = event.clientY - rect.top;
+                    const transparentImage = document.createElement('canvas');
+                    transparentImage.width = 1;
+                    transparentImage.height = 1;
+                    transparentImage.getContext('2d').clearRect(0, 0, 1, 1);
+                    transparentImage.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none';
+                    document.body.appendChild(transparentImage);
+                    card._transparentDragImage = transparentImage;
+                    event.dataTransfer.setDragImage(transparentImage, 0, 0);
                     event.dataTransfer.setData('text/plain', card.dataset.id);
                     event.dataTransfer.effectAllowed = 'move';
                 });
+                card.addEventListener('drag', event => {
+                    if (!card._dragPreview || (event.clientX === 0 && event.clientY === 0)) return;
+                    card._dragPreview.style.left = `${event.clientX - card._dragOffsetX}px`;
+                    card._dragPreview.style.top = `${event.clientY - card._dragOffsetY}px`;
+                });
                 card.addEventListener('dragend', () => {
                     card.classList.remove('is-dragging');
+                    card._dragPreview?.remove();
+                    card._transparentDragImage?.remove();
+                    card._dragPreview = null;
+                    card._transparentDragImage = null;
                     document.querySelectorAll('.kanban-dropzone').forEach(zone => zone.classList.remove('is-drag-over'));
                 });
             });

@@ -66,11 +66,49 @@
                     <option value="COMPLETED">完了</option>
                 </select>
             </div>
+            <details class="form-row subtask-details" th:open="${!#lists.isEmpty(todoSubtasks)}">
+                <summary th:text="${#lists.isEmpty(todoSubtasks) ? 'サブタスクなし（開いて追加）' : 'サブタスク有り（' + #lists.size(todoSubtasks) + '件）'}">サブタスク</summary>
+                <section class="subtask-list">
+                    <h2>完了状況</h2>
+                    <p th:if="${#lists.isEmpty(todoSubtasks)}">サブタスクはまだありません。</p>
+                    <div th:each="subtask : ${todoSubtasks}" class="subtask-check-row">
+                        <input type="checkbox" th:checked="${subtask.completed}"
+                               th:attr="data-url=@{/todos/{todoId}/subtasks/{subtaskId}/completed(todoId=${todo.id},subtaskId=${subtask.id})}"
+                               onchange="updateSubtaskCompleted(this)">
+                        <span th:text="${subtask.title}" th:classappend="${subtask.completed} ? ' subtask-completed' : ''"></span>
+                        <span class="subtask-state" th:text="${subtask.completed} ? '完了' : '未完了'"></span>
+                    </div>
+                </section>
+                <fieldset class="subtask-fields">
+                    <legend>サブタスク名（最大10件）</legend>
+                    <label th:each="i : ${#numbers.sequence(0, 9)}" class="subtask-input-row">
+                        <span th:text="${i + 1}"></span>
+                        <input class="form-input" type="text" th:name="|subtasks[${i}]|" th:value="${todo.subtasks != null and todo.subtasks.size() > i ? todo.subtasks[i] : ''}" maxlength="255" th:attr="aria-label=|サブタスク${i + 1}|">
+                    </label>
+                </fieldset>
+            </details>
             <button class="btn" type="submit">確認する</button>
             <a class="btn sub" href="/todos">一覧へ</a>
         </form>
     </main>
     <script>
+        function updateSubtaskCompleted(checkbox) {
+            const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+            const previousValue = !checkbox.checked;
+            fetch(checkbox.dataset.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', [csrfHeader]: csrfToken },
+                body: new URLSearchParams({ completed: checkbox.checked })
+            }).then(response => {
+                if (!response.ok) throw new Error('サブタスクの状態を更新できませんでした。');
+                window.location.reload();
+            }).catch(() => {
+                checkbox.checked = previousValue;
+                window.alert('サブタスクの状態を更新できませんでした。');
+            });
+        }
+
         document.getElementById('addCategory').addEventListener('click', function () {
             const input = document.getElementById('newCategory');
             const name = input.value.trim();

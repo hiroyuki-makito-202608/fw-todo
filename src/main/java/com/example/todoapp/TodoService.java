@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -12,10 +13,12 @@ public class TodoService {
 
     private final TodoMapper todoMapper;
     private final TodoCategoryMapper categoryMapper;
+    private final TodoSubtaskMapper subtaskMapper;
 
-    public TodoService(TodoMapper todoMapper, TodoCategoryMapper categoryMapper) {
+    public TodoService(TodoMapper todoMapper, TodoCategoryMapper categoryMapper, TodoSubtaskMapper subtaskMapper) {
         this.todoMapper = todoMapper;
         this.categoryMapper = categoryMapper;
+        this.subtaskMapper = subtaskMapper;
     }
 
     public List<Todo> search(String keyword, String category, String order, LocalDate from, LocalDate to) {
@@ -30,7 +33,9 @@ public class TodoService {
         return todoMapper.findById(id);
     }
 
+    @Transactional
     public int create(Todo todo) {
+        normalizeSubtasks(todo);
         todo.setCategory(ensureCategory(todo.getCategory()));
         if (todo.getCompleted() == null) {
             todo.setCompleted(false);
@@ -39,10 +44,14 @@ public class TodoService {
             todo.setStatus(Boolean.TRUE.equals(todo.getCompleted()) ? "COMPLETED" : "TODO");
         }
         log.info("Todo created{}", todo.getId() == null ? "" : ": id=" + todo.getId());
-        return todoMapper.insert(todo);
+        int inserted = todoMapper.insert(todo);
+        saveSubtasks(todo);
+        return inserted;
     }
 
+    @Transactional
     public int update(Todo todo) {
+        normalizeSubtasks(todo);
         todo.setCategory(ensureCategory(todo.getCategory()));
         if (todo.getStatus() == null || todo.getStatus().isBlank()) {
             todo.setStatus(Boolean.TRUE.equals(todo.getCompleted()) ? "COMPLETED" : "TODO");
@@ -51,7 +60,48 @@ public class TodoService {
             throw new IllegalArgumentException("Invalid status");
         }
         log.info("Todo updated{}", todo.getId() == null ? "" : ": id=" + todo.getId());
-        return todoMapper.update(todo);
+        int updated = todoMapper.update(todo);
+        if (updated > 0) {
+            saveSubtasks(todo);
+        }
+        return updated;
+    }
+
+    public List<TodoSubtask> findSubtasks(Long todoId) {
+        return subtaskMapper.findByTodoId(todoId);
+    }
+
+    public boolean updateSubtaskCompleted(Long todoId, Long subtaskId, boolean completed) {
+        return subtaskMapper.updateCompleted(subtaskId, todoId, completed) > 0;
+    }
+
+    private void normalizeSubtasks(Todo todo) {
+        List<String> subtasks = todo.getSubtasks() == null ? List.of() : todo.getSubtasks().stream()
+                .map(value -> value == null ? "" : value.trim())
+                .filter(value -> !value.isEmpty())
+                .toList();
+        if (subtasks.size() > 10) {
+            throw new IllegalArgumentException("サブタスクは10件まで登録できます。");
+        }
+        if (subtasks.stream().anyMatch(value -> value.length() > 255)) {
+            throw new IllegalArgumentException("サブタスクは255文字以内で入力してください。");
+        }
+        todo.setSubtasks(subtasks);
+    }
+
+    private void saveSubtasks(Todo todo) {
+        java.util.Map<String, java.util.ArrayDeque<Boolean>> completionByTitle = new java.util.HashMap<>();
+        for (TodoSubtask old : subtaskMapper.findByTodoId(todo.getId())) {
+            completionByTitle.computeIfAbsent(old.getTitle(), ignored -> new java.util.ArrayDeque<>())
+                    .add(Boolean.TRUE.equals(old.getCompleted()));
+        }
+        subtaskMapper.deleteByTodoId(todo.getId());
+        for (int i = 0; i < todo.getSubtasks().size(); i++) {
+            String title = todo.getSubtasks().get(i);
+            java.util.ArrayDeque<Boolean> priorStates = completionByTitle.get(title);
+            boolean completed = priorStates != null && !priorStates.isEmpty() && priorStates.removeFirst();
+            subtaskMapper.insert(todo.getId(), title, i, completed);
+        }
     }
 
     public int delete(Long id) {

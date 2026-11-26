@@ -2,7 +2,6 @@ package com.example.todoapp;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.io.Resource;
@@ -12,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +52,7 @@ public class HomeController {
             order = "asc";
         }
         model.addAttribute("todos", todoService.search(keyword, category, order));
+        model.addAttribute("categories", todoService.findCategories());
         model.addAttribute("keyword", keyword);
         model.addAttribute("category", category);
         model.addAttribute("order", order);
@@ -63,6 +62,7 @@ public class HomeController {
     @GetMapping("/todos/new")
     public String createForm(Model model) {
         model.addAttribute("todo", new Todo());
+        model.addAttribute("categories", todoService.findCategories());
         return "create";
     }
 
@@ -71,6 +71,7 @@ public class HomeController {
             @RequestParam(name = "attachment", required = false) MultipartFile attachment, Model model) {
         model.addAttribute("todo", todo);
         if (bindingResult.hasErrors()) {
+            model.addAttribute("categories", todoService.findCategories());
             return "create";
         }
         if (attachment != null && !attachment.isEmpty()) {
@@ -90,6 +91,7 @@ public class HomeController {
     @PostMapping("/todos/new")
     public String createRewrite(@ModelAttribute Todo todo, Model model) {
         model.addAttribute("todo", todo);
+        model.addAttribute("categories", todoService.findCategories());
         return "create";
     }
 
@@ -126,6 +128,7 @@ public class HomeController {
         }
         model.addAttribute("todo", todo);
         model.addAttribute("attachments", attachmentMapper.findByTodoId(id));
+        model.addAttribute("categories", todoService.findCategories());
         return "edit";
     }
 
@@ -135,6 +138,7 @@ public class HomeController {
         todo.setId(id);
         model.addAttribute("todo", todo);
         model.addAttribute("attachments", attachmentMapper.findByTodoId(id));
+        model.addAttribute("categories", todoService.findCategories());
         if (bindingResult.hasErrors()) {
             return "edit";
         }
@@ -145,6 +149,7 @@ public class HomeController {
     public String editRewrite(@PathVariable("id") Long id, @ModelAttribute Todo todo, Model model) {
         todo.setId(id);
         model.addAttribute("todo", todo);
+        model.addAttribute("categories", todoService.findCategories());
         return "edit";
     }
 
@@ -187,6 +192,16 @@ public class HomeController {
         saveAttachment(id, file);
         redirectAttributes.addFlashAttribute("message", "添付ファイルを登録しました。");
         return "redirect:/todos/{id}/edit";
+    }
+
+    @PostMapping("/categories")
+    public ResponseEntity<java.util.Map<String, String>> addCategory(@RequestParam String name) {
+        try {
+            todoService.addCategory(name);
+            return ResponseEntity.ok(java.util.Map.of("name", name.trim()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
     }
 
     private void saveAttachment(Long todoId, MultipartFile file) throws IOException {

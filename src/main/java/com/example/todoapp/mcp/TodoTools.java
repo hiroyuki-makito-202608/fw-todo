@@ -17,13 +17,6 @@ import com.example.todoapp.api.TodoDto;
 @Component
 public class TodoTools {
 
-    private static final Set<String> CATEGORIES = Set.of(
-            "\u30C7\u30B6\u30A4\u30F3",
-            "\u30DE\u30FC\u30B1\u30C6\u30A3\u30F3\u30B0",
-            "\u30D7\u30ED\u30B0\u30E9\u30DF\u30F3\u30B0",
-            "\u8CC7\u683C",
-            "\u5C31\u8077\u6D3B\u52D5");
-
     private final TodoService todoService;
     private final HolidayClient holidayClient;
 
@@ -145,8 +138,8 @@ public class TodoTools {
     }
 
     private void validateCategory(String category) {
-        if (!CATEGORIES.contains(category)) {
-            throw new IllegalArgumentException("Unsupported category");
+        if (category == null || category.isBlank() || category.length() > 255) {
+            throw new IllegalArgumentException("Category must contain 1 to 255 characters");
         }
     }
 }

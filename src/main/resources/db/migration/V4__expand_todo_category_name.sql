@@ -1,0 +1,1 @@
+ALTER TABLE todo_categories MODIFY name VARCHAR(255) NOT NULL;

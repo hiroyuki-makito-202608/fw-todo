@@ -19,16 +19,23 @@ class TodoTemplateTests {
 
     @Test
     void todosTemplateIsUtf8WellFormedHtmlAndHasJapaneseText() throws Exception {
-        Path template = Path.of("src/main/resources/templates/todos.html");
+        for (String templateName : java.util.List.of("todos.html", "create.html", "edit.html")) {
+        Path template = Path.of("src/main/resources/templates", templateName);
         byte[] bytes = Files.readAllBytes(template);
         String source = StandardCharsets.UTF_8.newDecoder()
                 .decode(java.nio.ByteBuffer.wrap(bytes)).toString();
 
         assertThat(source).contains("<meta charset=\"UTF-8\">");
-        assertThat(source).contains("やること一覧", "新規登録", "まだ登録されているやることはありません。", "添付有");
-        assertThat(source).doesNotContain("繧", "縺");
+        assertThat(source).contains("UTF-8").doesNotContain("繧", "縺");
+        if (templateName.equals("todos.html")) {
+            assertThat(source).contains("やること一覧", "新規登録", "まだ登録されているやることはありません。", "添付有");
+        }
+        if (templateName.equals("edit.html")) {
+            assertThat(source).contains("新規登録", "category");
+        }
 
         String xmlCompatible = source.replaceAll("(?i)<\\!doctype[^>]*>", "")
+                .replaceAll("(?i)\\s(required|disabled|checked|multiple)(?=[\\s/>])", " $1=\"$1\"")
                 .replaceAll("(?i)<(meta|link|input|br|hr|img)(\\s[^<>]*?)?>", "<$1$2/>");
         DocumentBuilderFactory.newInstance().newDocumentBuilder()
                 .parse(new InputSource(new java.io.StringReader(xmlCompatible)));
@@ -48,5 +55,6 @@ class TodoTemplateTests {
             }
         }
         assertThat(stack).isEmpty();
+        }
     }
 }

@@ -12,6 +12,7 @@
 |---|---|
 | `todos` | やることと、その分類・期限・状態・日時を1件ずつ保存します。 |
 | `todo_attachments` | ToDoに添付されたファイルのメタ情報を保存します。 |
+| `todo_categories` | ToDoで選択できるジャンルを独立して保存します。 |
 
 ## 3. `todos` テーブル
 
@@ -98,6 +99,24 @@ CREATE TABLE todo_attachments (
     UNIQUE KEY uk_todo_attachments_stored_file_name (stored_file_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
+
+ジャンルを管理する環境では `todo_categories` にジャンル名を保存し、`todos.category_id` で参照します。既存DBには `src/main/resources/db/migration/V3__create_todo_categories.sql` を実行します。このSQLは既存の `todos.category` の値をジャンル表へ移行し、外部キーを追加します。旧アプリとの互換性のため `todos.category` も当面残し、新旧列を同期して保存します。
+
+```sql
+CREATE TABLE todo_categories (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_todo_categories_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE todos ADD COLUMN category_id BIGINT NULL;
+ALTER TABLE todos ADD CONSTRAINT fk_todos_category
+    FOREIGN KEY (category_id) REFERENCES todo_categories(id) ON UPDATE CASCADE;
+```
+
+V3実行後、ジャンル名の上限を既存の `category` 列と揃えるため `V4__expand_todo_category_name.sql` を実行します。アプリ切り替え後、旧 `category` 列を削除する場合はバックアップを取得したうえで実行します。
 
 `CHECK` は、列に許可する値をDBにも確認させる制約です。ジャンルの5候補の選択、空白だけの文字列の拒否、優先度の選択必須はアプリ側でも確認します。
 

@@ -36,13 +36,14 @@
                 <label class="form-label" for="category">ジャンル</label>
                 <select class="form-input" id="category" th:field="*{category}">
                     <option value="">選択してください</option>
-                    <option value="デザイン">デザイン</option>
-                    <option value="マーケティング">マーケティング</option>
-                    <option value="プログラミング">プログラミング</option>
-                    <option value="資格">資格</option>
-                    <option value="就職活動">就職活動</option>
+                    <option th:each="category : ${categories}" th:value="${category}" th:text="${category}"></option>
                 </select>
                 <p class="error" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></p>
+                <div class="category-create-row">
+                    <input class="form-input" id="newCategory" type="text" maxlength="255" placeholder="新しいジャンル名">
+                    <button class="btn sub" type="button" id="addCategory">新規登録</button>
+                </div>
+                <p class="category-help">ジャンル名を入力して「新規登録」を押すと、選択肢に追加されます。</p>
             </div>
             <div class="form-row">
                 <label class="form-label" for="priority">優先度</label>
@@ -66,5 +67,30 @@
             <a class="btn sub" href="/todos">一覧へ</a>
         </form>
     </main>
+    <script>
+        document.getElementById('addCategory').addEventListener('click', function () {
+            const input = document.getElementById('newCategory');
+            const name = input.value.trim();
+            const select = document.getElementById('category');
+            if (!name) return;
+            const existing = Array.from(select.options).find(option => option.value === name);
+            if (existing) {
+                select.value = name;
+                input.value = '';
+                return;
+            }
+            const body = new URLSearchParams({ name });
+            fetch('/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body
+            }).then(async response => {
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'ジャンルを登録できませんでした。');
+                select.add(new Option(result.name, result.name, true, true));
+                input.value = '';
+            }).catch(error => window.alert(error.message));
+        });
+    </script>
 </body>
 </html>

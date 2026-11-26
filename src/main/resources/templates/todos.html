@@ -58,7 +58,7 @@
                     <td th:text="${todo.category}">ジャンル</td>
                     <td th:text="${todo.priority == 1 ? '高' : (todo.priority == 2 ? '中' : '低')}">優先度</td>
                     <td th:text="${todo.dueDate}">期限</td>
-                    <td th:text="${todo.status == 'IN_PROGRESS' ? '進行中' : (todo.status == 'COMPLETED' or todo.completed ? '完了' : '未着手')}">未着手</td>
+                    <td><span class="status-badge" th:classappend="${todo.status == 'IN_PROGRESS' ? 'status-progress' : (todo.status == 'COMPLETED' or todo.completed ? 'status-completed' : 'status-todo')}" th:text="${todo.status == 'IN_PROGRESS' ? '進行中' : (todo.status == 'COMPLETED' or todo.completed ? '完了' : '未着手')}">未着手</span></td>
                     <td>
                         <a class="link" th:href="@{/todos/{id}/edit(id=${todo.id})}">編集</a>
                         <a class="link" th:href="@{/todos/{id}/delete(id=${todo.id})}">削除</a>

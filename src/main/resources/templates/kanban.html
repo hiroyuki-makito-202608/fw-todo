@@ -24,6 +24,13 @@
                         <div class="kanban-card-badges" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}">
                             <span class="subtask-badge" th:text="|サブタスク ${todo.completedSubtaskCount}/${todo.subtaskCount}|">サブタスク 0/0</span>
                         </div>
+                        <div class="kanban-card-progress" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}"
+                             th:with="progress=${todo.completedSubtaskCount * 100 / todo.subtaskCount}"
+                             role="progressbar" aria-label="サブタスク完了率" aria-valuemin="0" aria-valuemax="100"
+                             th:attr="aria-valuenow=${progress}">
+                            <div class="kanban-card-progress-track"><div class="kanban-card-progress-fill" th:style="|width: ${progress}%|"></div></div>
+                            <small th:text="|${todo.completedSubtaskCount}/${todo.subtaskCount} 完了|">0/0 完了</small>
+                        </div>
                         <p th:text="${todo.category}">ジャンル</p>
                         <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>
                     </article>
@@ -37,6 +44,13 @@
                         <div class="kanban-card-badges" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}">
                             <span class="subtask-badge" th:text="|サブタスク ${todo.completedSubtaskCount}/${todo.subtaskCount}|">サブタスク 0/0</span>
                         </div>
+                        <div class="kanban-card-progress" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}"
+                             th:with="progress=${todo.completedSubtaskCount * 100 / todo.subtaskCount}"
+                             role="progressbar" aria-label="サブタスク完了率" aria-valuemin="0" aria-valuemax="100"
+                             th:attr="aria-valuenow=${progress}">
+                            <div class="kanban-card-progress-track"><div class="kanban-card-progress-fill" th:style="|width: ${progress}%|"></div></div>
+                            <small th:text="|${todo.completedSubtaskCount}/${todo.subtaskCount} 完了|">0/0 完了</small>
+                        </div>
                         <p th:text="${todo.category}">ジャンル</p>
                         <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>
                     </article>
@@ -49,6 +63,13 @@
                         <a th:href="@{/todos/{id}/edit(id=${todo.id})}" th:text="${todo.title}">タスク名</a>
                         <div class="kanban-card-badges" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}">
                             <span class="subtask-badge" th:text="|サブタスク ${todo.completedSubtaskCount}/${todo.subtaskCount}|">サブタスク 0/0</span>
+                        </div>
+                        <div class="kanban-card-progress" th:if="${todo.subtaskCount != null and todo.subtaskCount > 0}"
+                             th:with="progress=${todo.completedSubtaskCount * 100 / todo.subtaskCount}"
+                             role="progressbar" aria-label="サブタスク完了率" aria-valuemin="0" aria-valuemax="100"
+                             th:attr="aria-valuenow=${progress}">
+                            <div class="kanban-card-progress-track"><div class="kanban-card-progress-fill" th:style="|width: ${progress}%|"></div></div>
+                            <small th:text="|${todo.completedSubtaskCount}/${todo.subtaskCount} 完了|">0/0 完了</small>
                         </div>
                         <p th:text="${todo.category}">ジャンル</p>
                         <small th:if="${todo.dueDate != null}" th:text="${'期限: ' + todo.dueDate}">期限</small>

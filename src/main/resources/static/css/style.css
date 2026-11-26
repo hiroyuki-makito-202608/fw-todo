@@ -5,7 +5,7 @@
 body {
     margin: 0;
     color: #334155;
-    background: #ffffff;
+    background: #f3f5f8;
     font-family: sans-serif;
     font-size: 16px;
     line-height: 1.6;
@@ -13,15 +13,20 @@ body {
 
 .container {
     width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px 16px;
+    max-width: 1200px;
+    margin: 16px auto;
+    border: 1px solid #edf0f3;
+    border-radius: 12px;
+    padding: 24px;
+    background: #ffffff;
+    box-shadow: 0 3px 12px rgb(15 23 42 / 7%);
 }
 
 .page-title {
-    margin: 0 0 24px;
-    color: #1e293b;
+    margin: 0 0 20px;
+    color: #243447;
     font-size: 28px;
+    font-weight: 700;
 }
 
 .todo-table {
@@ -31,23 +36,29 @@ body {
 
 .todo-table th,
 .todo-table td {
-    border: 1px solid #94a3b8;
-    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    padding: 9px 11px;
     text-align: left;
     font-size: 14px;
 }
 
 .todo-table th {
-    background: #f1f5f9;
+    background: #eef7f8;
+    color: #277785;
     font-weight: bold;
+}
+
+.todo-table tbody tr:nth-child(even) {
+    background: #fafcfd;
 }
 
 .flash {
     margin: 0 0 16px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    border: 1px solid #bfdbfe;
+    border-radius: 9px;
     padding: 8px 12px;
-    background: #f1f5f9;
+    background: #eff6ff;
+    color: #1e40af;
 }
 
 .search-bar {
@@ -55,7 +66,10 @@ body {
     flex-wrap: wrap;
     align-items: end;
     gap: 12px;
-    margin-bottom: 20px;
+    margin: 20px 0;
+    border-radius: 10px;
+    padding: 14px;
+    background: #f8fafc;
 }
 
 .form-row {
@@ -85,12 +99,17 @@ body {
 
 .form-input {
     width: 100%;
-    border: 1px solid #94a3b8;
+    border: 1px solid #cbd5e1;
     border-radius: 6px;
     padding: 7px 10px;
     background: #ffffff;
     color: #334155;
     font: inherit;
+}
+
+.form-input:focus {
+    border-color: #19a3b7;
+    outline: 3px solid rgb(25 163 183 / 15%);
 }
 
 .subtask-fields {
@@ -164,23 +183,34 @@ body {
 
 .btn {
     display: inline-block;
-    border: 1px solid #334155;
+    border: 1px solid #159bad;
     border-radius: 7px;
-    padding: 7px 18px;
-    background: #334155;
+    padding: 7px 16px;
+    background: #159bad;
     color: #ffffff;
     font: inherit;
     text-decoration: none;
     cursor: pointer;
+    transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.btn:hover {
+    background: #117f90;
+    box-shadow: 0 2px 6px rgb(15 23 42 / 15%);
 }
 
 .btn.sub {
     background: #ffffff;
-    color: #334155;
+    color: #168b9c;
+    border-color: #b7dfe4;
+}
+
+.btn.sub:hover {
+    background: #f0fbfc;
 }
 
 .link {
-    color: #334155;
+    color: #138b9d;
     text-decoration: underline;
 }
 
@@ -211,7 +241,7 @@ body {
 .calendar-table th,
 .calendar-table td {
     height: 76px;
-    border: 1px solid #94a3b8;
+    border: 1px solid #e2e8f0;
     padding: 6px;
     text-align: left;
     vertical-align: top;
@@ -219,7 +249,8 @@ body {
 
 .calendar-table th {
     height: auto;
-    background: #f1f5f9;
+    background: #eef7f8;
+    color: #277785;
 }
 
 .calendar-table td.saturday {
@@ -243,8 +274,36 @@ body {
     color: #dc2626;
 }
 
-.todo-table tr.overdue-row {
+.todo-table .status-badge {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 2px 9px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-todo {
+    background: #dff5f7;
+    color: #087e8b;
+}
+
+.status-progress {
+    background: #fff3cd;
+    color: #946200;
+}
+
+.status-completed {
+    background: #d9f2df;
+    color: #1d7d3a;
+}
+
+.todo-table tbody tr.overdue-row {
     background-color: #fee2e2;
+}
+
+.container > .btn {
+    margin: 0 6px 8px 0;
 }
 
 .attachment-badge {
@@ -297,6 +356,34 @@ body {
     gap: 12px;
 }
 
+.kanban-card-progress {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 4px;
+}
+
+.kanban-card-progress-track {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e8ecef;
+}
+
+.kanban-card-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #159bad, #20c997);
+    transition: width 220ms ease;
+}
+
+.kanban-card-progress small {
+    color: #64748b;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
 .kanban-board {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -308,9 +395,10 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #edf0f3;
     border-radius: 10px;
-    background: #f8fafc;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgb(15 23 42 / 6%);
     overflow: hidden;
 }
 
@@ -319,16 +407,25 @@ body {
     justify-content: space-between;
     margin: 0;
     padding: 12px 14px;
-    background: #e2e8f0;
-    color: #1e293b;
+    background: #169fb2;
+    color: #ffffff;
     font-size: 16px;
+}
+
+.kanban-column[data-status="IN_PROGRESS"] h2 {
+    background: #28a745;
+}
+
+.kanban-column[data-status="COMPLETED"] h2 {
+    background: #20a982;
 }
 
 .kanban-column h2 span {
     min-width: 24px;
     border-radius: 999px;
     padding: 0 7px;
-    background: #fff;
+    background: rgb(255 255 255 / 22%);
+    color: #ffffff;
     text-align: center;
 }
 
@@ -347,11 +444,11 @@ body {
 }
 
 .kanban-card {
-    border: 1px solid #cbd5e1;
+    border: 1px solid #edf0f3;
     border-radius: 8px;
     padding: 12px;
     background: #fff;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+    box-shadow: 0 2px 7px rgb(15 23 42 / 7%);
     cursor: grab;
 }
 
@@ -359,6 +456,16 @@ body {
     cursor: grabbing;
     opacity: 1 !important;
     filter: none !important;
+}
+
+.kanban-card > a {
+    color: #138b9d;
+    font-weight: 700;
+}
+
+.kanban-card:hover {
+    border-color: #a8d9df;
+    box-shadow: 0 4px 12px rgb(15 23 42 / 10%);
 }
 
 .kanban-drag-preview {
@@ -391,6 +498,12 @@ body {
 }
 
 @media (max-width: 700px) {
+    .container {
+        width: calc(100% - 20px);
+        margin: 10px auto;
+        padding: 16px;
+    }
+
     .kanban-board {
         grid-template-columns: 1fr;
     }
